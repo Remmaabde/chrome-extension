@@ -1,0 +1,66 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leads Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white w-72 p-4">
+  <h1 class="text-lg font-bold mb-2">Chrome Extension</h1>
+
+  <input id="input-el" type="text" placeholder="Enter a lead..." class="w-full p-2 rounded bg-gray-800 text-white mb-2">
+  <div class="flex gap-2">
+    <button id="input-btn" class="flex-1 bg-green-600 hover:bg-green-700 p-2 rounded">Save Input</button>
+    <button id="tab-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 p-2 rounded">Save Tab</button>
+  </div>
+
+  <button id="delete-btn" class="bg-red-600 hover:bg-red-700 w-full mt-2 p-2 rounded">Delete All</button>
+
+  <ul id="ul-el" class="list-disc list-inside mt-4 text-sm"></ul>
+  <script>
+    const inputEl = document.getElementById("input-el");
+    const inputBtn = document.getElementById("input-btn");
+    const deleteBtn = document.getElementById("delete-btn");
+    const tabBtn = document.getElementById("tab-btn");
+    const ulEl = document.getElementById("ul-el");
+
+    let leads = JSON.parse(localStorage.getItem("leads")) || [];
+
+    function render(leadsArr) {
+      ulEl.innerHTML = "";
+      for (let lead of leadsArr) {
+        let li = document.createElement("li");
+        li.innerHTML = `<a href="${lead}" target="_blank" class="text-blue-400 hover:underline">${lead}</a>`;
+        ulEl.appendChild(li);
+      }
+    }
+
+    inputBtn.addEventListener("click", () => {
+      const val = inputEl.value.trim();
+      if (val) {
+        leads.push(val);
+        localStorage.setItem("leads", JSON.stringify(leads));
+        inputEl.value = "";
+        render(leads);
+      }
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      localStorage.clear();
+      leads = [];
+      render(leads);
+    });
+
+    tabBtn.addEventListener("click", () => {
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        leads.push(tabs[0].url);
+        localStorage.setItem("leads", JSON.stringify(leads));
+        render(leads);
+      });
+    });
+
+    render(leads);
+  </script>
+</body>
+</html>
